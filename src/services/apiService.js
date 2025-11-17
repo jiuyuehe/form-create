@@ -165,6 +165,36 @@ class ApiService {
     })
   }
 
+  // ========== 提示词管理 ==========
+
+  /**
+   * 获取表单的自定义提示词
+   */
+  async getFormPrompt(formId) {
+    return await this.request(`/api/forms/${formId}/prompt`, {
+      method: 'GET'
+    })
+  }
+
+  /**
+   * 保存表单的自定义提示词
+   */
+  async saveFormPrompt(formId, prompt) {
+    return await this.request(`/api/forms/${formId}/prompt`, {
+      method: 'PUT',
+      body: JSON.stringify({ prompt })
+    })
+  }
+
+  /**
+   * 删除表单的自定义提示词（恢复默认）
+   */
+  async deleteFormPrompt(formId) {
+    return await this.request(`/api/forms/${formId}/prompt`, {
+      method: 'DELETE'
+    })
+  }
+
   // ========== 批量操作 ==========
 
   /**

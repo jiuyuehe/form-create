@@ -1,12 +1,11 @@
 <script setup>
-// 引入表单列表视图组件
-import FormList from './views/FormList.vue'
+// App component with router support
 </script>
 
 <template>
   <div id="app">
-    <!-- 主界面：表单列表 -->
-    <FormList />
+    <!-- Router view for all pages -->
+    <router-view />
   </div>
 </template>
 

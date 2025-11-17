@@ -19,6 +19,9 @@
           />
         </div>
         <div class="toolbar-right">
+          <el-button @click="handleViewPrompt" :icon="ChatLineSquare">
+            查看提示词
+          </el-button>
           <el-button @click="handleAddData" :icon="Plus" type="primary">
             添加数据
           </el-button>
@@ -176,6 +179,14 @@
       </template>
     </el-dialog>
 
+    <!-- 提示词编辑器 -->
+    <PromptEditor
+      v-model:visible="promptEditorVisible"
+      :form="form"
+      :storage-mode="storageMode"
+      @save="handlePromptSaved"
+    />
+
     <!-- 隐藏的文件输入 -->
     <input ref="fileInput" type="file" style="display: none" />
   </el-dialog>
@@ -195,14 +206,21 @@ import {
   Download,
   Edit,
   Delete,
-  UploadFilled
+  UploadFilled,
+  ChatLineSquare
 } from '@element-plus/icons-vue'
 import FormRenderer from './FormRenderer.vue'
+import PromptEditor from './PromptEditor.vue'
 
 // Props
 const props = defineProps({
   visible: Boolean,
-  form: Object
+  form: Object,
+  storageMode: {
+    type: String,
+    default: 'localStorage', // 'localStorage' or 'api'
+    validator: (value) => ['localStorage', 'api'].includes(value)
+  }
 })
 
 // Emits
@@ -218,6 +236,7 @@ const searchText = ref('')
 const results = ref([])
 const dataFormVisible = ref(false)
 const uploadDialogVisible = ref(false)
+const promptEditorVisible = ref(false)
 const currentData = ref({})
 const isEditMode = ref(false)
 const editingDataId = ref(null)
@@ -315,6 +334,16 @@ const handleExportData = () => {
   
   exportDataToCsv(results.value, props.form.schema, `${props.form.name}-data.csv`)
   ElMessage.success('数据已导出')
+}
+
+// 查看提示词
+const handleViewPrompt = () => {
+  promptEditorVisible.value = true
+}
+
+// 提示词保存成功回调
+const handlePromptSaved = (prompt) => {
+  ElMessage.success('提示词已保存')
 }
 
 // 上传文件提取

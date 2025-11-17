@@ -31,6 +31,9 @@ export const formStore = reactive({
   // 表单数据结果集
   formResults: loadFromStorage('formResults', {}),
   
+  // 表单自定义提示词
+  formPrompts: loadFromStorage('formPrompts', {}),
+  
   // 添加新表单
   async addForm(form) {
     const newForm = {
@@ -205,6 +208,54 @@ export const formStore = reactive({
       description: schemaData.description || '',
       schema: schemaData.schema || []
     })
+  },
+  
+  // ========== 提示词管理 ==========
+  
+  // 获取表单的自定义提示词
+  async getFormPrompt(formId) {
+    // 如果启用了 API 模式，先从后端获取
+    if (appConfig.storageMode === 'api' && appConfig.api.enabled) {
+      try {
+        const response = await apiService.getFormPrompt(formId)
+        return response.prompt
+      } catch (error) {
+        console.error('API 获取提示词失败，使用本地存储:', error)
+      }
+    }
+    
+    // 使用本地存储
+    return this.formPrompts[formId] || null
+  },
+  
+  // 保存表单的自定义提示词
+  async saveFormPrompt(formId, prompt) {
+    // 如果启用了 API 模式，先保存到后端
+    if (appConfig.storageMode === 'api' && appConfig.api.enabled) {
+      try {
+        await apiService.saveFormPrompt(formId, prompt)
+      } catch (error) {
+        console.error('API 保存提示词失败，使用本地存储:', error)
+      }
+    }
+    
+    // 保存到本地存储
+    this.formPrompts[formId] = prompt
+  },
+  
+  // 删除表单的自定义提示词（恢复默认）
+  async deleteFormPrompt(formId) {
+    // 如果启用了 API 模式，先从后端删除
+    if (appConfig.storageMode === 'api' && appConfig.api.enabled) {
+      try {
+        await apiService.deleteFormPrompt(formId)
+      } catch (error) {
+        console.error('API 删除提示词失败，使用本地存储:', error)
+      }
+    }
+    
+    // 从本地存储删除
+    delete this.formPrompts[formId]
   }
 })
 
@@ -215,4 +266,8 @@ watch(() => formStore.forms, (newForms) => {
 
 watch(() => formStore.formResults, (newResults) => {
   saveToStorage('formResults', newResults)
+}, { deep: true })
+
+watch(() => formStore.formPrompts, (newPrompts) => {
+  saveToStorage('formPrompts', newPrompts)
 }, { deep: true })
