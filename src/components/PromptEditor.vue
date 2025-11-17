@@ -86,7 +86,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox  } from 'element-plus'
 import { 
   Document, 
   DataLine, 
@@ -205,7 +205,7 @@ const calculateTokens = () => {
 
 // 处理生成默认提示词
 const handleGenerateDefault = () => {
-  ElMessage.confirm('生成默认提示词将覆盖当前内容，是否继续？', '提示', {
+  ElMessageBox.confirm('生成默认提示词将覆盖当前内容，是否继续？', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning'

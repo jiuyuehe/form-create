@@ -129,6 +129,7 @@ import FormPreview from '../components/FormPreview.vue'
 import FormDataView from '../components/FormDataView.vue'
 import TemplateMarket from '../components/TemplateMarket.vue'
 import SettingsDialog from '../components/SettingsDialog.vue'
+import { appConfig } from '../config/appConfig'
 
 // 状态管理
 const designerVisible = ref(false)
