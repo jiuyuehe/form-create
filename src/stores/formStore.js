@@ -1,5 +1,7 @@
 // 表单数据管理存储
 import { reactive, watch } from 'vue'
+import { apiService } from '../services/apiService'
+import { appConfig } from '../config/appConfig'
 
 // 从 localStorage 加载数据
 const loadFromStorage = (key, defaultValue) => {
@@ -30,7 +32,7 @@ export const formStore = reactive({
   formResults: loadFromStorage('formResults', {}),
   
   // 添加新表单
-  addForm(form) {
+  async addForm(form) {
     const newForm = {
       id: Date.now().toString(),
       name: form.name || '未命名表单',
@@ -39,6 +41,20 @@ export const formStore = reactive({
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     }
+    
+    // 如果启用了 API 模式，先保存到后端
+    if (appConfig.storageMode === 'api' && appConfig.api.enabled) {
+      try {
+        const savedForm = await apiService.createForm(newForm)
+        this.forms.push(savedForm)
+        this.formResults[savedForm.id] = []
+        return savedForm
+      } catch (error) {
+        console.error('API 保存表单失败，使用本地存储:', error)
+      }
+    }
+    
+    // 使用本地存储
     this.forms.push(newForm)
     // 初始化该表单的结果集
     this.formResults[newForm.id] = []
@@ -46,21 +62,41 @@ export const formStore = reactive({
   },
   
   // 更新表单
-  updateForm(id, updates) {
+  async updateForm(id, updates) {
     const index = this.forms.findIndex(f => f.id === id)
     if (index !== -1) {
-      this.forms[index] = {
+      const updatedForm = {
         ...this.forms[index],
         ...updates,
         updatedAt: new Date().toISOString()
       }
+      
+      // 如果启用了 API 模式，先更新到后端
+      if (appConfig.storageMode === 'api' && appConfig.api.enabled) {
+        try {
+          await apiService.updateForm(id, updatedForm)
+        } catch (error) {
+          console.error('API 更新表单失败，使用本地存储:', error)
+        }
+      }
+      
+      this.forms[index] = updatedForm
     }
   },
   
   // 删除表单
-  deleteForm(id) {
+  async deleteForm(id) {
     const index = this.forms.findIndex(f => f.id === id)
     if (index !== -1) {
+      // 如果启用了 API 模式，先从后端删除
+      if (appConfig.storageMode === 'api' && appConfig.api.enabled) {
+        try {
+          await apiService.deleteForm(id)
+        } catch (error) {
+          console.error('API 删除表单失败，使用本地存储:', error)
+        }
+      }
+      
       this.forms.splice(index, 1)
       delete this.formResults[id]
     }
@@ -72,7 +108,7 @@ export const formStore = reactive({
   },
   
   // 添加表单数据结果
-  addFormResult(formId, result) {
+  async addFormResult(formId, result) {
     if (!this.formResults[formId]) {
       this.formResults[formId] = []
     }
@@ -83,29 +119,61 @@ export const formStore = reactive({
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     }
+    
+    // 如果启用了 API 模式，先保存到后端
+    if (appConfig.storageMode === 'api' && appConfig.api.enabled) {
+      try {
+        const savedResult = await apiService.createFormResult(formId, newResult)
+        this.formResults[formId].push(savedResult)
+        return savedResult
+      } catch (error) {
+        console.error('API 保存数据失败，使用本地存储:', error)
+      }
+    }
+    
     this.formResults[formId].push(newResult)
     return newResult
   },
   
   // 更新表单数据结果
-  updateFormResult(formId, resultId, data) {
+  async updateFormResult(formId, resultId, data) {
     if (this.formResults[formId]) {
       const index = this.formResults[formId].findIndex(r => r.id === resultId)
       if (index !== -1) {
-        this.formResults[formId][index] = {
+        const updatedResult = {
           ...this.formResults[formId][index],
           data,
           updatedAt: new Date().toISOString()
         }
+        
+        // 如果启用了 API 模式，先更新到后端
+        if (appConfig.storageMode === 'api' && appConfig.api.enabled) {
+          try {
+            await apiService.updateFormResult(formId, resultId, updatedResult)
+          } catch (error) {
+            console.error('API 更新数据失败，使用本地存储:', error)
+          }
+        }
+        
+        this.formResults[formId][index] = updatedResult
       }
     }
   },
   
   // 删除表单数据结果
-  deleteFormResult(formId, resultId) {
+  async deleteFormResult(formId, resultId) {
     if (this.formResults[formId]) {
       const index = this.formResults[formId].findIndex(r => r.id === resultId)
       if (index !== -1) {
+        // 如果启用了 API 模式，先从后端删除
+        if (appConfig.storageMode === 'api' && appConfig.api.enabled) {
+          try {
+            await apiService.deleteFormResult(formId, resultId)
+          } catch (error) {
+            console.error('API 删除数据失败，使用本地存储:', error)
+          }
+        }
+        
         this.formResults[formId].splice(index, 1)
       }
     }

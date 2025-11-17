@@ -185,6 +185,8 @@
 import { ref, computed, watch } from 'vue'
 import { formStore } from '../stores/formStore'
 import { generateFormData, exportDataToCsv } from '../utils/formUtils'
+import { extractDataWithAI, readFileContent, validateExtractedData } from '../services/aiService'
+import { appConfig } from '../config/appConfig'
 import { ElMessage } from 'element-plus'
 import {
   Search,
@@ -333,23 +335,87 @@ const handleExtractData = async () => {
   extracting.value = true
   
   try {
-    // 模拟AI提取数据的过程
-    await new Promise(resolve => setTimeout(resolve, 1500))
+    let content = ''
     
-    // 生成模拟数据（实际应用中这里应该调用AI服务）
-    const mockData = generateMockDataFromSchema(props.form.schema)
+    // 获取内容
+    if (extractMode.value === 'file') {
+      if (!uploadFile.value) {
+        ElMessage.warning('请先上传文件')
+        extracting.value = false
+        return
+      }
+      
+      try {
+        content = await readFileContent(uploadFile.value.raw)
+      } catch (error) {
+        ElMessage.error(error.message || '文件读取失败')
+        extracting.value = false
+        return
+      }
+    } else {
+      content = extractText.value
+      if (!content) {
+        ElMessage.warning('请输入文本内容')
+        extracting.value = false
+        return
+      }
+    }
     
-    // 添加提取的数据
-    formStore.addFormResult(props.form.id, mockData)
-    results.value = formStore.getFormResults(props.form.id)
-    
-    ElMessage.success('数据提取成功')
-    uploadDialogVisible.value = false
+    // 检查是否启用了 AI 服务
+    if (appConfig.ai.enabled && appConfig.ai.apiUrl) {
+      try {
+        // 使用真实的 AI 服务提取数据
+        const extractedData = await extractDataWithAI(
+          appConfig.ai,
+          props.form.schema,
+          content
+        )
+        
+        // 验证提取的数据
+        const validation = validateExtractedData(extractedData, props.form.schema)
+        if (!validation.valid) {
+          ElMessage.warning(`数据提取成功，但存在一些问题: ${validation.errors[0]}`)
+        }
+        
+        // 添加提取的数据
+        await formStore.addFormResult(props.form.id, extractedData)
+        results.value = formStore.getFormResults(props.form.id)
+        
+        ElMessage.success('AI 数据提取成功')
+        uploadDialogVisible.value = false
+      } catch (error) {
+        console.error('AI 提取失败:', error)
+        ElMessage.error(`AI 提取失败: ${error.message}，将使用模拟数据`)
+        
+        // 如果 AI 提取失败，使用模拟数据
+        await useMockExtraction()
+      }
+    } else {
+      // 如果未启用 AI 服务，使用模拟数据
+      await useMockExtraction()
+    }
   } catch (error) {
     ElMessage.error('数据提取失败')
+    console.error('提取错误:', error)
   } finally {
     extracting.value = false
   }
+}
+
+// 使用模拟数据提取
+const useMockExtraction = async () => {
+  // 模拟AI提取数据的过程
+  await new Promise(resolve => setTimeout(resolve, 1000))
+  
+  // 生成模拟数据
+  const mockData = generateMockDataFromSchema(props.form.schema)
+  
+  // 添加提取的数据
+  await formStore.addFormResult(props.form.id, mockData)
+  results.value = formStore.getFormResults(props.form.id)
+  
+  ElMessage.success('数据提取成功（模拟数据）')
+  uploadDialogVisible.value = false
 }
 
 // 生成模拟数据
