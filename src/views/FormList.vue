@@ -79,6 +79,7 @@
     <FormDesigner
       v-model:visible="designerVisible"
       :form="editingForm"
+      :storage-mode="appConfig.storageMode"
       @save="handleSaveForm"
     />
 
@@ -92,6 +93,7 @@
     <FormDataView
       v-model:visible="dataViewVisible"
       :form="dataViewForm"
+      :storage-mode="appConfig.storageMode"
     />
 
     <!-- 模板市场对话框 -->

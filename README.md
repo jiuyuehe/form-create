@@ -24,6 +24,8 @@
 ### 🤖 AI 智能数据提取 ⭐ NEW
 - **真实 AI 集成**：支持 OpenAI 及兼容 API
 - **智能提示词生成**：自动根据表单 schema 生成专业提示词
+- **提示词管理**：查看、编辑、测试和保存自定义提示词 ⭐ NEW
+- **Token 计数**：实时显示提示词的 token 数量 ⭐ NEW
 - **严格格式约束**：确保提取数据符合 JSON schema 规范
 - **文件上传**：支持上传文本文件进行数据提取
 - **文本输入**：直接输入文本内容进行提取
@@ -40,8 +42,10 @@
 - **一键使用**：快速基于模板创建表单
 
 ### 🔌 后端 API 集成 ⭐ NEW
+- **路由系统**：完整的 Vue Router 路由管理 ⭐ NEW
 - **双模式存储**：支持 localStorage 和后端 API 两种存储模式
-- **完整的 API 接口**：表单 CRUD、数据 CRUD、批量操作等
+- **存储模式配置**：组件级别的存储模式控制 ⭐ NEW
+- **完整的 API 接口**：表单 CRUD、数据 CRUD、批量操作、提示词管理等 ⭐ NEW
 - **灵活配置**：可随时切换存储模式
 - **向后兼容**：保持对本地存储的完整支持
 - **安全认证**：支持 API Key 认证
@@ -164,31 +168,34 @@ npm run preview
 
 ```
 src/
-├── views/              # 视图组件
+├── router/            # 路由管理 ⭐ NEW
+│   └── index.js       # 路由配置
+├── views/             # 视图组件
 │   └── FormList.vue   # 主列表视图
-├── components/         # 可复用组件
+├── components/        # 可复用组件
 │   ├── FormDesigner.vue     # 表单设计器
 │   ├── FormRenderer.vue     # 表单渲染器
 │   ├── FormPreview.vue      # 表单预览
 │   ├── FormDataView.vue     # 数据查看
-│   ├── TemplateMarket.vue   # 模板市场 ⭐ NEW
-│   └── SettingsDialog.vue   # 系统设置 ⭐ NEW
+│   ├── PromptEditor.vue     # AI提示词编辑器 ⭐ NEW
+│   ├── TemplateMarket.vue   # 模板市场
+│   └── SettingsDialog.vue   # 系统设置
 ├── stores/            # 状态管理
-│   └── formStore.js   # 表单数据存储
-├── services/          # 服务模块 ⭐ NEW
+│   └── formStore.js   # 表单数据存储（含提示词管理）⭐ NEW
+├── services/          # 服务模块
 │   ├── aiService.js   # AI 数据提取服务
-│   └── apiService.js  # 后端 API 服务
-├── templates/         # 表单模板 ⭐ NEW
+│   └── apiService.js  # 后端 API 服务（含提示词API）⭐ NEW
+├── templates/         # 表单模板
 │   ├── enterpriseTemplates.js  # 企业模板
 │   ├── educationTemplates.js   # 教育模板
 │   ├── militaryTemplates.js    # 军工模板
 │   └── index.js       # 模板汇总
-├── config/            # 配置模块 ⭐ NEW
+├── config/            # 配置模块
 │   └── appConfig.js   # 应用配置
 ├── utils/             # 工具函数
 │   └── formUtils.js   # 表单相关工具
-├── App.vue            # 根组件
-├── main.js            # 应用入口
+├── App.vue            # 根组件（使用 router-view）⭐ NEW
+├── main.js            # 应用入口（注册路由）⭐ NEW
 └── style.css          # 全局样式
 ```
 
@@ -196,6 +203,7 @@ src/
 
 - **前端框架**：Vue 3 (Composition API)
 - **UI 组件库**：Element Plus 2.11.8
+- **路由管理**：Vue Router 4 ⭐
 - **构建工具**：Vite 7.2.2
 - **状态管理**：Vue Reactive API
 - **数据持久化**：LocalStorage / 后端 API ⭐
@@ -253,6 +261,8 @@ AI 提取 → 数据验证 → 数据存储（本地/API）→ 数据展示
 - [x] 集成真实的 AI 数据提取服务 ✅
 - [x] 支持表单模板市场 ✅
 - [x] 后端 API 集成 ✅
+- [x] 路由系统实现 ✅
+- [x] AI 提示词管理 ✅
 - [ ] 支持更多字段类型（URL、颜色选择器、富文本编辑器等）
 - [ ] 添加字段间的条件显示逻辑
 - [ ] 实现拖拽排序字段

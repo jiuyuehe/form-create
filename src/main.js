@@ -9,6 +9,9 @@ import 'element-plus/dist/index.css'
 import zhCn from 'element-plus/es/locale/lang/zh-cn'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 
+// 引入路由
+import router from './router'
+
 // 创建应用实例
 const app = createApp(App)
 
@@ -16,6 +19,9 @@ const app = createApp(App)
 app.use(ElementPlus, {
   locale: zhCn,
 })
+
+// 注册路由
+app.use(router)
 
 // 注册所有图标
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
