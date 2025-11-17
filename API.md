@@ -424,6 +424,69 @@ Content-Type: application/json
 }
 ```
 
+### 6. AI 提示词管理（可选）
+
+用于管理每个表单的自定义AI提示词。
+
+#### 6.1 获取表单提示词
+
+**请求**
+```
+GET /api/forms/:formId/prompt
+```
+
+**参数**
+- `formId`: 表单ID
+
+**响应示例**
+```json
+{
+  "prompt": "你是一个专业的数据提取助手...",
+  "isCustom": true,
+  "updatedAt": "2024-01-01T00:00:00.000Z"
+}
+```
+
+**说明**
+- 如果该表单没有自定义提示词，返回 404 或空响应
+- 前端会根据表单schema自动生成默认提示词
+
+#### 6.2 保存自定义提示词
+
+**请求**
+```
+PUT /api/forms/:formId/prompt
+Content-Type: application/json
+
+{
+  "prompt": "自定义的提示词内容..."
+}
+```
+
+**响应示例**
+```json
+{
+  "success": true,
+  "prompt": "自定义的提示词内容...",
+  "updatedAt": "2024-01-01T00:00:00.000Z"
+}
+```
+
+#### 6.3 删除自定义提示词（恢复默认）
+
+**请求**
+```
+DELETE /api/forms/:formId/prompt
+```
+
+**响应示例**
+```json
+{
+  "success": true,
+  "message": "已恢复默认提示词"
+}
+```
+
 ## 错误响应
 
 所有接口在出错时应返回统一格式的错误响应：
