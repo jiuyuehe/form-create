@@ -9,11 +9,14 @@
         </h1>
       </div>
       <div class="toolbar-right">
+        <el-button @click="handleTemplateMarket" :icon="Shop">
+          模板市场
+        </el-button>
         <el-button type="primary" @click="handleCreateForm" :icon="Plus">
           创建表单
         </el-button>
-        <el-button @click="handleDataAnalysis" :icon="DataAnalysis">
-          数据分析
+        <el-button @click="handleSettings" :icon="Setting">
+          设置
         </el-button>
       </div>
     </div>
@@ -90,6 +93,17 @@
       v-model:visible="dataViewVisible"
       :form="dataViewForm"
     />
+
+    <!-- 模板市场对话框 -->
+    <TemplateMarket
+      v-model:visible="templateMarketVisible"
+      @select-template="handleSelectTemplate"
+    />
+
+    <!-- 设置对话框 -->
+    <SettingsDialog
+      v-model:visible="settingsVisible"
+    />
   </div>
 </template>
 
@@ -99,7 +113,8 @@ import { formStore } from '../stores/formStore'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   Plus,
-  DataAnalysis,
+  Shop,
+  Setting,
   Document,
   View,
   Edit,
@@ -110,11 +125,15 @@ import {
 import FormDesigner from '../components/FormDesigner.vue'
 import FormPreview from '../components/FormPreview.vue'
 import FormDataView from '../components/FormDataView.vue'
+import TemplateMarket from '../components/TemplateMarket.vue'
+import SettingsDialog from '../components/SettingsDialog.vue'
 
 // 状态管理
 const designerVisible = ref(false)
 const previewVisible = ref(false)
 const dataViewVisible = ref(false)
+const templateMarketVisible = ref(false)
+const settingsVisible = ref(false)
 const editingForm = ref(null)
 const previewForm = ref(null)
 const dataViewForm = ref(null)
@@ -156,42 +175,42 @@ const handleViewData = (form) => {
 }
 
 // 删除表单
-const handleDelete = (id) => {
-  formStore.deleteForm(id)
+const handleDelete = async (id) => {
+  await formStore.deleteForm(id)
   ElMessage.success('表单已删除')
 }
 
 // 保存表单
-const handleSaveForm = (formData) => {
+const handleSaveForm = async (formData) => {
   if (editingForm.value) {
-    // 更新表单
-    formStore.updateForm(editingForm.value.id, formData)
+    // 更新现有表单
+    await formStore.updateForm(editingForm.value.id, formData)
     ElMessage.success('表单已更新')
   } else {
     // 创建新表单
-    formStore.addForm(formData)
+    await formStore.addForm(formData)
     ElMessage.success('表单已创建')
   }
-  designerVisible.value = false
 }
 
-// 数据分析
-const handleDataAnalysis = () => {
-  const totalForms = formStore.forms.length
-  const totalResults = Object.values(formStore.formResults).reduce((sum, results) => sum + results.length, 0)
-  
-  ElMessageBox.alert(
-    `<div style="line-height: 1.8;">
-      <p><strong>表单总数：</strong>${totalForms}</p>
-      <p><strong>数据总数：</strong>${totalResults}</p>
-      <p><strong>平均每表单数据：</strong>${totalForms > 0 ? (totalResults / totalForms).toFixed(2) : 0}</p>
-    </div>`,
-    '数据分析',
-    {
-      dangerouslyUseHTMLString: true,
-      confirmButtonText: '知道了'
-    }
-  )
+// 打开模板市场
+const handleTemplateMarket = () => {
+  templateMarketVisible.value = true
+}
+
+// 从模板创建表单
+const handleSelectTemplate = async (template) => {
+  await formStore.addForm({
+    name: template.name,
+    description: template.description,
+    schema: template.schema
+  })
+  ElMessage.success(`已从模板 "${template.name}" 创建表单`)
+}
+
+// 打开设置
+const handleSettings = () => {
+  settingsVisible.value = true
 }
 </script>
 
